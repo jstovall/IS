@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Arrest Related Deaths By County - Choropleth</title>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+</head>
+<style>
+ 
+path {
+stroke:white;
+stroke-width: 1px;
+}
+h1 {
+margin:15px
+}
+ 
+body {
+font-family: Arial, sans-serif;
+}
+ 
+.city {
+font: 10px sans-serif;
+font-weight: bold;
+}
+ 
+.legend {
+font-size: 12px;
+}
+ 
+div.tooltip {
+position: absolute;
+text-align: center;
+color: white;
+width: 150px;
+height: 15px;
+padding: 2px;
+font-size: 12px;
+
+background: #0059b3;
+border: 1px;
+border-radius: 4px;
+pointer-events: none;
+}
+</style>
+<h1>Arrest-Related Deaths By County (2000-2015)</h1> 
+<body>
+<script type="text/javascript">
+
+
+/*
+Great tips for customization:
+https://suffenus.wordpress.com/2014/01/07/making-interactive-maps-with-d3-for-total-beginners/
+*/
+
+var width = 960,
+height = 500;
+var color_domain = [0,1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150, 170, 200]
+var ext_color_domain = [0, 1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150, 170, 200]
+var legend_labels = ["0", "1+", "5+", "10+", "15+", "20+", "25+", "30+", "35+", "40+", "45+", "50+", "60+", "70+", "80+", "90+", "100+", "125+", "150+", "175+", ">200"]
+var color = d3.scale.threshold()
+.domain(color_domain)
+.range(["#ffffff", "#e6f2ff", "#cce6ff", "#b3d9ff", "#99ccff", "#80bfff", "#66b3ff", "#4da6ff", "#3399ff", "#1a8cff", "#0080ff", "#0073e6", "#0066cc", "#0059b3", "#004d99", "#004080", "#003366", "#00264d","#001a33","#000d1a", "#000000"]);
+ 
+var div = d3.select("body").append("div")
+.attr("class", "tooltip")
+.style("opacity", 0);
+ 
+var svg = d3.select("body").append("svg")
+.attr("width", width)
+.attr("height", height)
+.style("margin", "10px auto");
+var path = d3.geo.path()
+ 
+queue()
+.defer(d3.json, "http://bl.ocks.org/mbostock/raw/4090846/us.json")
+.defer(d3.csv, "https://raw.githubusercontent.com/jstovall/IS/master/data.csv")
+.await(ready);
+ 
+function ready(error, us, data) {
+var pairRateWithId = {};
+var pairNameWithId = {};
+ 
+data.forEach(function(d) {
+pairRateWithId[d.id] = +d.ards;
+pairNameWithId[d.id] = d.name;
+});
+svg.append("g")
+.attr("class", "county")
+.selectAll("path")
+.data(topojson.feature(us, us.objects.counties).features)
+.enter().append("path")
+.attr("d", path)
+.style ( "fill" , function (d) {
+return color (pairRateWithId[d.id]);
+})
+.style("opacity", 0.7)
+.on("mouseover", function(d) {
+d3.select(this).transition().duration(300).style("opacity", 1);
+div.transition().duration(400)
+.style("opacity", 1)
+div.text(pairNameWithId[d.id] + " : " + pairRateWithId[d.id])
+.style("left", (d3.event.pageX) + "px")
+.style("top", (d3.event.pageY -30) + "px");
+})
+.on("mouseout", function() {
+d3.select(this)
+.transition().duration(300)
+.style("opacity", 0.8);
+div.transition().duration(300)
+.style("opacity", 0);
+})
+ 
+};
+ 
+var legend = svg.selectAll("g.legend")
+.data(ext_color_domain)
+.enter().append("g")
+.attr("class", "legend");
+ 
+var ls_w = 20, ls_h = 20;
+ 
+legend.append("rect")
+.attr("x", 20)
+.attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
+.attr("width", ls_w)
+.attr("height", ls_h)
+.style("fill", function(d, i) { return color(d); })
+.style("opacity", 0.8);
+ 
+legend.append("text")
+.attr("x", 50)
+.attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
+.text(function(d, i){ return legend_labels[i]; });
+ 
+</script>
+</body>
+</html>

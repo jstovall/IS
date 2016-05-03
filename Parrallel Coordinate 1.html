@@ -27,49 +27,53 @@ body, html {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  font-size: 12px;
+  font-size: 10px;
 }
+
 #grid, #pager {
   position: fixed;
   width: 100%;
 }
 #grid {
   bottom: 0;
-  height: 300px;
+  height: 200px;
 }
 #pager {
   bottom: 306px;
-  height: 20px;
+  height: 15px;
 }
 .slick-row:hover {
   font-weight: bold;
   color: #069;
 }
 text {
-  font: 10px sans-serif;
+  font: 9px sans-serif;
 }
 </style>
+///https://suffenus.wordpress.com/2014/01/07/making-interactive-maps-with-d3-for-total-beginners/
 
-<a href="#" id="export-data">Export Data</a>
 <script src="http://people.ischool.berkeley.edu/~dmenghani/wine-viz_bkp/examples/lib/d3.min.js"></script>
 <script src="http://people.ischool.berkeley.edu/~dmenghani/wine-viz_bkp/d3.parcoords.js"></script>
 <script src="http://people.ischool.berkeley.edu/~dmenghani/wine-viz_bkp/examples/lib/underscore.js"></script>   
 <script src="http://people.ischool.berkeley.edu/~dmenghani/wine-viz_bkp/examples/lib/divgrid.js"></script>
+<script src="http://mbostock.github.io/protovis/ex/cars.js"></script>
 
 <div id="example" class="parcoords" style="height:240px;"></div>
+<a href="#" id="export-data">Export Data</a>
 <div id="grid"></div>
 <div id="pager"></div> 
 <script id="brushing">
 var parcoords = d3.parcoords()("#example")
-  .alpha(0.1)
+  .alpha(.15)
   .mode("queue") // progressive rendering
-  .height(d3.max([document.body.clientHeight-326, 220]))
+  .height(d3.max([document.body.clientHeight-400, 220]))
   .margin({
-    top: 36,
-    left: 0,
+    top: 26,
+    left: 26,
     right: 0,
-    bottom: 16
+    bottom: 20
   });
+
 
 // load csv file and create the chart
 d3.csv("https://raw.githubusercontent.com/jstovall/ARD_Thesis/master/pc_reduced", function(data) {
@@ -90,6 +94,7 @@ d3.csv("https://raw.githubusercontent.com/jstovall/ARD_Thesis/master/pc_reduced"
     .reorderable()
     .brushable();
 
+
   // setting up grid
   var column_keys = d3.keys(data[0]);
   var columns = column_keys.map(function(key,i) {
@@ -103,13 +108,13 @@ d3.csv("https://raw.githubusercontent.com/jstovall/ARD_Thesis/master/pc_reduced"
 
   var options = {
     enableCellNavigation: true,
-    enableColumnReorder: false,
+    enableColumnReorder: false,	//would need jquery-ui.sortable module to be loaded
     multiColumnSort: false
   };
 
   var dataView = new Slick.Data.DataView();
   var grid = new Slick.Grid("#grid", dataView, columns, options);
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+  //var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
 
   // wire up model events to drive the grid
   dataView.onRowCountChanged.subscribe(function (e, args) {
@@ -166,6 +171,7 @@ d3.csv("https://raw.githubusercontent.com/jstovall/ARD_Thesis/master/pc_reduced"
     dataView.setItems(data);
     dataView.endUpdate();
   };
+  
 // Export data
  function export_csv() {
     var keys = d3.keys(data[0]);
