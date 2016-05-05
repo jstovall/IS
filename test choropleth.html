@@ -77,7 +77,7 @@ var svg = d3.select("body").append("svg")
 var path = d3.geo.path()
  
 queue()
-.defer(d3.json, "http://bl.ocks.org/mbostock/raw/4090846/us.json")
+.defer(d3.json, "https://raw.githubusercontent.com/jstovall/IS/master/us.json")
 .defer(d3.csv, "https://raw.githubusercontent.com/jstovall/IS/master/data.csv")
 .await(ready);
  
