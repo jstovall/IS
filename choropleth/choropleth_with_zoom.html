@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8">
+<title>Arrest Related Deaths By County - Choropleth</title>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/queue.v1.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+
+</head>
+<style>
+ 
+path {
+stroke:white;
+stroke-width: 1px;
+}
+h1 {
+margin:15px
+}
+ 
+body {
+font-family: Arial, sans-serif;
+}
+ 
+.city {
+font: 10px sans-serif;
+font-weight: bold;
+}
+ 
+.legend {
+font-size: 12px;
+}
+ 
+div.tooltip {
+position: absolute;
+text-align: center;
+color: white;
+width: 165px;
+height: 15px;
+padding: 2px;
+font-size: 12px;
+
+background: #0059b3;
+opacity: .8:
+border: 1px;
+border-radius: 4px;
+pointer-events: none;
+}
+</style>
+<h1>Arrest-Related Deaths By County (2000-2015)</h1> 
+<body>
+<script type="text/javascript">
+
+
+/*
+credits:
+tutorial for choropleth
+https://suffenus.wordpress.com/2014/01/07/making-interactive-maps-with-d3-for-total-beginners/
+zooming feature
+https://bl.ocks.org/mbostock/2206590
+cities projection
+http://bl.ocks.org/michellechandra/0b2ce4923dc9b5809922
+*/
+
+var width = 960,
+	height = 500,
+	centered;
+					
+var color_domain = [0,1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 225, 250, 275, 300, 400, 500]
+var ext_color_domain = [0,1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 225, 250, 275, 300, 400, 500]
+var legend_labels = ["0","1+", "10+", "20+", "30+", "40+","50+", "60+", "70+", "80+", "90+", "100+", "125+", "150+", "175+", "200+", "225+", "250+", "275+", "300+", "400+", "500+"]
+var color = d3.scale.threshold()
+.domain(color_domain)
+.range(["red", "#ffffff", "#eaeae8","#e6f2ff", "#cce6ff", "#b3d9ff", "#99ccff", "#80bfff", "#66b3ff", "#4da6ff", "#3399ff", "#1a8cff", "#0080ff", "#0073e6", "#0066cc", "#0059b3", "#004d99", "#004080", "#003366", "#00264d","#001a33","#000d1a", "#000000"]);
+// D3 Projection
+
+var projection = d3.geo.albersUsa()
+	.translate([width/2, height/2])   
+	.scale([1000]); 
+				   
+var div = d3.select("body").append("div")
+.attr("class", "tooltip")
+.style("opacity", 0);
+
+var path = d3.geo.path()
+	.projection(projection);
+ 
+var svg = d3.select("body").append("svg")
+	.attr("width", width)
+	.attr("height", height)
+	.style("margin", "10px auto");
+
+var g = svg.append("g");	
+
+queue()
+.defer(d3.json, "https://raw.githubusercontent.com/jstovall/IS/master/us.json")
+.defer(d3.csv, "https://raw.githubusercontent.com/jstovall/IS/master/data.csv")
+.await(ready);
+
+function ready(error, us, data) {
+var pairRateWithId = {};
+var pairNameWithId = {};
+	data.forEach(function(d) {
+		pairRateWithId[d.id] = +d.ards;
+		pairNameWithId[d.id] = d.name;
+});
+
+g.append("g")
+.attr("class", "county")
+.selectAll("path")
+.data(topojson.feature(us, us.objects.counties).features)
+.enter().append("path")
+.attr("d", path)
+.style ( "fill" , function (d) {
+return color (pairRateWithId[d.id]);
+})
+.style("opacity", 0.7)
+.on("mouseover", function(d) {
+d3.select(this).transition().duration(300).style("opacity", 1);
+div.transition().duration(400)
+.style("opacity", 1)
+div.text(pairNameWithId[d.id] + " : " + pairRateWithId[d.id])
+.style("left", (d3.event.pageX) + "px")
+.style("top", (d3.event.pageY -30) + "px");
+})
+.on("mouseout", function() {
+d3.select(this)
+.transition().duration(300)
+.style("opacity", 0.8);
+div.transition().duration(300)
+.style("opacity", 0);
+})
+.on("click", clicked); 
+};
+
+
+var legend = svg.selectAll("g.legend")
+.data(ext_color_domain)
+.enter().append("g")
+.attr("class", "legend");
+
+ 
+var ls_w = 20, ls_h = 20;
+ 
+legend.append("rect")
+.attr("x", 20)
+.attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
+.attr("width", ls_w)
+.attr("height", ls_h)
+.style("fill", function(d, i) { return color(d); })
+.style("opacity", 0.7);
+ 
+legend.append("text")
+.attr("x", 50)
+.attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
+.text(function(d, i){ return legend_labels[i]; });
+
+// City projections
+d3.csv("https://rawgit.com/jstovall/IS/master/cities.csv", function(data) {
+
+g.selectAll("circle")
+	.data(data)
+	.enter()
+	.append("circle")
+	.attr("cx", function(d) {
+		return projection([d.lon, d.lat])[0];
+	})
+	.attr("cy", function(d) {
+		return projection([d.lon, d.lat])[1];
+	})
+	.attr("r", function(d) {
+		return Math.sqrt(d.population) * .01;
+	})
+		.style("fill", "darkorange")	
+		.style("opacity", 0.9)	 
+}) 
+function clicked(d) {
+  var x, y, k;
+
+  if (d && centered !== d) {
+    var centroid = path.centroid(d);
+    x = centroid[0];
+    y = centroid[1];
+    k = 4;
+    centered = d;
+  } else {
+    x = width / 2;
+    y = height / 2;
+    k = 1;
+    centered = null;
+  }
+
+  g.selectAll("path")
+      .classed("active", centered && function(d) { return d === centered; });
+
+  g.transition()
+      .duration(750)
+      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+      .style("stroke-width", 1.5 / k + "px");
+}  
+</script>
+</body>
+</html>
