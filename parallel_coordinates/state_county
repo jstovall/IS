@@ -1,4 +1,4 @@
-LEA,co_ard,co_ard_rate,countyID,co_name,st_name,st_ard,st_ard_rate,stateID,ID
+LEA,co_ard,co_ard_rate,countyid,co_name,st_name,st_ard,st_ard_rate,stateid,id
 ANCHORAGE POLICE DEPARTMENT,3,0.277,020,"Anchorage, AK",AK,59,0.593,02,2020
 ANCHORAGE POLICE DEPARTMENT,6,0.352,020,"Anchorage, AK",AK,59,0.593,02,2020
 Alaska State Troopers,4,0.137,020,"Anchorage, AK",AK,59,0.593,02,2020
