@@ -1,6 +1,6 @@
 .parcoords > svg, .parcoords > canvas {
   font: 20px "Trebuchet MS", Arial, Helvetica, sans-serif;
-  position: absolute;
+  float: left;
 }
 .parcoords > canvas {
   pointer-events: none;
